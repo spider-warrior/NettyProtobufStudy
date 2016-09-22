@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option java_package = "com.wxsk.protobuf";
+option java_outer_classname = "StudentTeacher";
+
+enum Sex {
+    Female = 0;
+    Male = 1;
+}
+
+message Student{
+    int64 id = 1;
+    string name = 2;
+    Sex sex = 3;
+    int64 birthday = 4;
+    Teacher teacher = 5;
+}
+
+message Teacher{
+    int64 id = 1;
+    string name = 2;
+    int64 birthday = 3;
+    Sex sex = 4;
+    repeated Student student = 5;
+}
