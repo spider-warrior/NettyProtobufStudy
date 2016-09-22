@@ -2,7 +2,6 @@ package server;
 
 import com.wxsk.protobuf.StudentTeacher;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -10,7 +9,6 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.util.ReferenceCountUtil;
 
 public class DefaultServer {
 
@@ -55,31 +53,18 @@ public class DefaultServer {
     }
 
     private static class EchoHandler extends SimpleChannelInboundHandler<StudentTeacher.Student> {
-//        @Override
-//        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//            try {
-//                ByteBuf bytebuf = (ByteBuf)msg;
-//                byte[] content = new byte[bytebuf.readableBytes()];
-//                bytebuf.readBytes(content);
-//                System.out.println("receive a message: " + new String(content));
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                ctx.close();
-//            } finally {
-//                ReferenceCountUtil.release(msg);
-//            }
-//        }
 
+        private int count = 0;
 
         @Override
         protected void channelRead0(ChannelHandlerContext ctx, StudentTeacher.Student msg) throws Exception {
             System.out.println("Receive a Student");
-            System.out.println("name: " + msg.getName());
-            ctx.writeAndFlush(msg);
+            System.out.println(msg);
+            System.out.println("-------------------------------------" + count++ + "-------------------------------------------");
         }
 
         public EchoHandler() {
-            super(false);
+            super(true);
         }
     }
 

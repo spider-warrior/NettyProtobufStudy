@@ -2,8 +2,6 @@ package client;
 
 import com.wxsk.protobuf.StudentTeacher;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.UnpooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
@@ -12,8 +10,8 @@ import io.netty.handler.codec.protobuf.ProtobufDecoder;
 import io.netty.handler.codec.protobuf.ProtobufEncoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32FrameDecoder;
 import io.netty.handler.codec.protobuf.ProtobufVarint32LengthFieldPrepender;
-import io.netty.util.ReferenceCountUtil;
 
+import java.util.Random;
 import java.util.Scanner;
 
 public class DefaultClient {
@@ -50,45 +48,11 @@ public class DefaultClient {
 
     private static class EchoHandler extends SimpleChannelInboundHandler<StudentTeacher.Student> {
 
-//        @Override
-//        public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//            try {
-//                ByteBuf bytebuf = (ByteBuf)msg;
-//                byte[] content = new byte[bytebuf.readableBytes()];
-//                bytebuf.readBytes(content);
-//                System.out.println("receive a message: " + new String(content));
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                ctx.close();
-//            } finally {
-//                ReferenceCountUtil.release(msg);
-//            }
-//        }
-//
-//        @Override
-//        public void channelActive(ChannelHandlerContext ctx) throws Exception {
-//            System.out.println("connection established successfully....");
-//            final Channel channel = ctx.channel();
-//            new Thread() {
-//                @Override
-//                public void run() {
-//                    Scanner scanner = new Scanner(System.in);
-//                    while(true) {
-//                        System.out.println("请输入消息: ");
-//                        byte[] msgBytes = scanner.nextLine().getBytes();
-//                        ByteBuf byteBuf = UnpooledByteBufAllocator.DEFAULT.buffer(msgBytes.length);
-//                        byteBuf.writeBytes(msgBytes);
-//                        channel.writeAndFlush(byteBuf);
-//                    }
-//                }
-//            }.start();
-//        }
-
-
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             System.out.println("connection has been established successfully....");
             final Channel channel = ctx.channel();
+            final Random random = new Random();
             new Thread() {
                 @Override
                 public void run() {
@@ -98,7 +62,34 @@ public class DefaultClient {
                         String name = scanner.nextLine();
                         StudentTeacher.Student.Builder studentBuilder = StudentTeacher.Student.newBuilder();
                         studentBuilder.setName(name);
-                        channel.writeAndFlush(studentBuilder.build());
+                        studentBuilder.setBirthday(System.currentTimeMillis());
+                        studentBuilder.setId(random.nextLong());
+                        studentBuilder.setSex(StudentTeacher.Sex.Male);
+
+                        StudentTeacher.Teacher.Builder teacherBuilder = StudentTeacher.Teacher.newBuilder();
+                        teacherBuilder.setId(random.nextLong());
+                        teacherBuilder.setBirthday(System.currentTimeMillis());
+                        teacherBuilder.setName("Teacher.zhang");
+                        teacherBuilder.setSex(StudentTeacher.Sex.Female);
+
+                        studentBuilder.setTeacher(teacherBuilder);
+
+                        int node1 = random.nextInt(5);
+                        int node2 = random.nextInt(5);
+                        int node3 = 10 - node1 - node2;
+
+                        for (int i=0; i<node1; i++) {
+                            channel.write(studentBuilder.build());
+                        }
+                        channel.flush();
+                        for (int i=0; i<node2; i++) {
+                            channel.write(studentBuilder.build());
+                        }
+                        channel.flush();
+                        for (int i=0; i<node3; i++) {
+                            channel.write(studentBuilder.build());
+                        }
+                        channel.flush();
                     }
                 }
             }.start();
